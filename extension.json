@@ -1,0 +1,41 @@
+{
+	"name": "StandardWikitext",
+	"version": "1.0",
+	"author": "[https://www.mediawiki.org/wiki/User:Sophivorus Sophivorus]",
+	"url": "https://www.mediawiki.org/wiki/Extension:StandardWikitext",
+	"descriptionmsg": "standardwikitext-desc",
+	"license-name": "GPL-3.0-or-later",
+	"type": "parserhook",
+	"requires": {
+		"MediaWiki": ">= 1.39.0"
+	},
+	"MessagesDirs": {
+		"StandardWikitext": [
+			"i18n"
+		]
+	},
+	"AutoloadClasses": {
+		"StandardWikitext": "StandardWikitext.php"
+	},
+	"Hooks": {
+		"ParserPreSaveTransformComplete": "StandardWikitext::onParserPreSaveTransformComplete"
+	},
+	"config": {
+		"StandardWikitextRules": {
+			"value": {
+				"templates": true,
+				"tables": true,
+				"links": true,
+				"references": true,
+				"lists": true,
+				"sections": true,
+				"spacing": true,
+				"punctuation": true
+			}
+		},
+		"StandardWikitextNamespaces": {
+			"value": []
+		}
+	},
+	"manifest_version": 2
+}
