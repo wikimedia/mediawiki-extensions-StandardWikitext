@@ -5,7 +5,7 @@ use MediaWiki\MediaWikiServices;
 class StandardWikitext {
 
 	public static function onParserPreSaveTransformComplete( Parser $parser, string &$text ) {
-		global $wgStandardWikitextNamespaces, $wgStandardWikitextRules;
+		global $wgStandardWikitextNamespaces, $wgStandardWikitextModules;
 
 		$title = $parser->getTitle();
 		$namespace = $title->getNamespace();
@@ -13,35 +13,35 @@ class StandardWikitext {
 			return;
 		}
 
-		if ( $wgStandardWikitextRules['templates'] ) {
+		if ( in_array( 'templates', $wgStandardWikitextModules ) ) {
 			$text = self::fixTemplates( $text );
 		}
 
-		if ( $wgStandardWikitextRules['tables'] ) {
+		if ( in_array( 'tables', $wgStandardWikitextModules ) ) {
 			$text = self::fixTables( $text );
 		}
 
-		if ( $wgStandardWikitextRules['links'] ) {
+		if ( in_array( 'links', $wgStandardWikitextModules ) ) {
 			$text = self::fixLinks( $text );
 		}
 
-		if ( $wgStandardWikitextRules['references'] ) {
+		if ( in_array( 'references', $wgStandardWikitextModules ) ) {
 			$text = self::fixReferences( $text );
 		}
 
-		if ( $wgStandardWikitextRules['lists'] ) {
+		if ( in_array( 'lists', $wgStandardWikitextModules ) ) {
 			$text = self::fixLists( $text );
 		}
 
-		if ( $wgStandardWikitextRules['sections'] ) {
+		if ( in_array( 'sections', $wgStandardWikitextModules ) ) {
 			$text = self::fixSections( $text );
 		}
 
-		if ( $wgStandardWikitextRules['spacing'] ) {
+		if ( in_array( 'spacing', $wgStandardWikitextModules ) ) {
 			$text = self::fixSpacing( $text );
 		}
 
-		if ( $wgStandardWikitextRules['punctuation'] ) {
+		if ( in_array( 'punctuation', $wgStandardWikitextModules ) ) {
 			$text = self::fixPunctuation( $text );
 		}
 	}
