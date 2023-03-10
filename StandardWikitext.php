@@ -202,7 +202,7 @@ class StandardWikitext {
 					// [[File:Foo.jpg|thumb|Caption with [[sub_link]].]] → [[File:Foo.jpg|thumb|Caption with [[sub link]].]]
 					$param = preg_replace_callback( "/\[\[[^\]]+\]\]/", function ( $matches ) {
 						$link = $matches[0];
-						return self::fixLink( $link );
+						return self::fixLinks( $link );
 					}, $param );
 
 					$link .= '|' . $param;
