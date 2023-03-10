@@ -1,6 +1,6 @@
 {
 	"name": "StandardWikitext",
-	"version": "1.1",
+	"version": "1.2",
 	"author": "[https://www.mediawiki.org/wiki/User:Sophivorus Sophivorus]",
 	"url": "https://www.mediawiki.org/wiki/Extension:StandardWikitext",
 	"descriptionmsg": "standardwikitext-desc",
@@ -32,7 +32,8 @@
 				"links",
 				"references",
 				"lists",
-				"sections"
+				"sections",
+				"spacing"
 			],
 			"merge_strategy": "provide_default"
 		}
