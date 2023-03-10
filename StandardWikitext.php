@@ -5,13 +5,23 @@ use MediaWiki\MediaWikiServices;
 class StandardWikitext {
 
 	public static function onParserPreSaveTransformComplete( Parser $parser, string &$wikitext ) {
-		global $wgStandardWikitextNamespaces, $wgStandardWikitextModules;
+		global $wgStandardWikitextNamespaces;
 
 		$title = $parser->getTitle();
+		$contentModel = $title->getContentModel();
+		if ( $contentModel !== CONTENT_MODEL_WIKITEXT ) {
+			return;
+		}
 		$namespace = $title->getNamespace();
 		if ( !in_array( $namespace, $wgStandardWikitextNamespaces ) ) {
 			return;
 		}
+
+		$wikitext = self::fixWikitext( $wikitext );
+	}
+
+	public static function fixWikitext( $wikitext ) {
+		global $wgStandardWikitextModules;
 
 		if ( in_array( 'templates', $wgStandardWikitextModules ) ) {
 			$wikitext = self::fixTemplates( $wikitext );
@@ -40,6 +50,8 @@ class StandardWikitext {
 		if ( in_array( 'spacing', $wgStandardWikitextModules ) ) {
 			$wikitext = self::fixSpacing( $wikitext );
 		}
+
+		return $wikitext;
 	}
 
 	public static function fixTemplates( $wikitext ) {
@@ -266,7 +278,7 @@ class StandardWikitext {
 		$wikitext = preg_replace( "/<ref name=' *([^']+) *'/", "<ref name=\"$1\"", $wikitext );
 		$wikitext = preg_replace( "/<ref name=([^\" \/>]+)/", "<ref name=\"$1\"", $wikitext );
 
-		// Remove spaces or newlines after opening ref tag
+		// Remove spaces or newlines after opening ref tags
 		$wikitext = preg_replace( "/<ref([^>\/]*)>[ \n]+/", "<ref$1>", $wikitext );
 
 		// Fix empty references with name
@@ -275,8 +287,11 @@ class StandardWikitext {
 		// Remove empty references
 		$wikitext = preg_replace( "/<ref><\/ref>/", "", $wikitext );
 
-		// Remove spaces or newlines before references
-		$wikitext = preg_replace( "/[ \n]+<\/?ref/", "<ref", $wikitext );
+		// Remove spaces or newlines around opening ref tags
+		$wikitext = preg_replace( "/[ \n]*<ref([^>\/]*)>[ \n]*/", "<ref$1>", $wikitext );
+
+		// Remove spaces or newlines before closing ref tags
+		$wikitext = preg_replace( "/[ \n]+<\/ref>/", "</ref>", $wikitext );
 
 		// Move references after punctuation
 		$wikitext = preg_replace( "/<ref([^<]+)<\/ref>([.,;:])/", "$2<ref$1</ref>", $wikitext );
@@ -286,6 +301,9 @@ class StandardWikitext {
 	}
 
 	public static function fixLists( $wikitext ) {
+
+		// Don't confuse a redirect with a numbered list
+		$wikitext = preg_replace( "/^#(.+ ?\[\[.+\]\])/", "@@@$1", $wikitext );
 
 		// Fix unordered lists with wrong items
 		$wikitext = preg_replace( "/^-/m", "*", $wikitext );
@@ -308,6 +326,9 @@ class StandardWikitext {
 		// Give lists some room
 		$wikitext = preg_replace( "/^([^*#][^\n]+)\n([*#])/m", "$1\n\n$2", $wikitext );
 		$wikitext = preg_replace( "/^([*#][^\n]+)\n([^*#])/m", "$1\n\n$2", $wikitext );
+
+		// Restore redirect
+		$wikitext = preg_replace( "/^@@@/", "#", $wikitext );
 
 		return $wikitext;
 	}
@@ -346,7 +367,7 @@ class StandardWikitext {
 		// Remove trailing spaces
 		$wikitext = preg_replace( "/^ $/m", "@@@", $wikitext ); // Exception for code blocks
 		$wikitext = preg_replace( "/ +$/m", "", $wikitext );
-		$wikitext = preg_replace( "/^@@@$/m", " ", $wikitext );
+		$wikitext = preg_replace( "/^@@@$/m", " ", $wikitext ); // Restore code block
 
 		// Fix line breaks
 		$wikitext = preg_replace( "/ *<br ?\/?> */", "<br>", $wikitext );

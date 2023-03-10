@@ -10,6 +10,7 @@ class ListsTest extends MediaWikiUnitTestCase {
         // No changes
         $this->assertEquals( StandardWikitext::fixLists( "* a\n* b\n* c" ), "* a\n* b\n* c" );
         $this->assertEquals( StandardWikitext::fixLists( "# a\n# b\n# c" ), "# a\n# b\n# c" );
+        $this->assertEquals( StandardWikitext::fixLists( "#REDIRECT [[Foo]]" ), "#REDIRECT [[Foo]]" );
 
 		// Fix unordered lists with wrong items
         $this->assertEquals( StandardWikitext::fixLists( "- a\n- b\n- c" ), "* a\n* b\n* c" );

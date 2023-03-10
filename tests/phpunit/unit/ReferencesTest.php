@@ -31,9 +31,13 @@ class ReferencesTest extends MediaWikiUnitTestCase {
         // Remove empty references
         $this->assertEquals( StandardWikitext::fixReferences( "<ref></ref>" ), "" );
 
-        // Remove spaces or newlines before references
-        $this->assertEquals( StandardWikitext::fixReferences( "foo. <ref name=\"bar\">baz</ref>" ), "foo.<ref name=\"bar\">baz</ref>" );
-        $this->assertEquals( StandardWikitext::fixReferences( "foo.\n<ref name=\"bar\" />" ), "foo.<ref name=\"bar\" />" );
+        // Remove spaces or newlines around opening ref tags
+        $this->assertEquals( StandardWikitext::fixReferences( "foo. <ref>baz</ref>" ), "foo.<ref>baz</ref>" );
+        $this->assertEquals( StandardWikitext::fixReferences( "foo.\n<ref name=\"bar\">baz</ref>" ), "foo.<ref name=\"bar\">baz</ref>" );
+
+        // Remove spaces or newlines before closing ref tags
+        $this->assertEquals( StandardWikitext::fixReferences( "foo.<ref>bar </ref>" ), "foo.<ref>bar</ref>" );
+        $this->assertEquals( StandardWikitext::fixReferences( "foo.<ref name=\"bar\">baz\n</ref>" ), "foo.<ref name=\"bar\">baz</ref>" );
 
         // Move references after punctuation
         $this->assertEquals( StandardWikitext::fixReferences( "foo<ref name=\"bar\">baz</ref>." ), "foo.<ref name=\"bar\">baz</ref>" );
