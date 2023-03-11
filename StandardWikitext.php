@@ -1,7 +1,5 @@
 <?php
 
-use MediaWiki\MediaWikiServices;
-
 class StandardWikitext {
 
 	public static function onParserPreSaveTransformComplete( Parser $parser, string &$wikitext ) {
@@ -147,7 +145,7 @@ class StandardWikitext {
 			// Remove empty captions
 			$table = preg_replace( "/\n\|\+\n/", "\n", $table );
 
-	        // Remove newrow after caption
+			// Remove newrow after caption
 			$table = preg_replace( "/(\n\|\+[^\n]+)\n\|\-/", "$1", $table );
 
 			// Fix pseudo-headers
@@ -226,7 +224,7 @@ class StandardWikitext {
 				$link = str_replace( '|alt=|', '|', $link );
 
 			// Link with alternative text: [[Title|text]]
-			} else if ( $params ) {
+			} elseif ( $params ) {
 
 				$text = $params[0];
 
@@ -269,7 +267,6 @@ class StandardWikitext {
 	}
 
 	public static function fixReferences( $wikitext ) {
-
 		// Fix spacing
 		$wikitext = preg_replace( "/<ref +name += +/", "<ref name=", $wikitext );
 		$wikitext = preg_replace( "/<ref([^>]+[^ ]+)\/>/", "<ref$1 />", $wikitext );
@@ -301,7 +298,6 @@ class StandardWikitext {
 	}
 
 	public static function fixLists( $wikitext ) {
-
 		// Don't confuse a redirect with a numbered list
 		$wikitext = preg_replace( "/^#(.+ ?\[\[.+\]\])/", "@@@$1", $wikitext );
 
@@ -334,7 +330,6 @@ class StandardWikitext {
 	}
 
 	public static function fixSections( $wikitext ) {
-
 		// Fix spacing
 		$wikitext = preg_replace( "/^(=+) *(.+?) *(=+) *$/m", "\n\n$1 $2 $3\n\n", $wikitext );
 		$wikitext = preg_replace( "/\n\n\n+/m", "\n\n", $wikitext );
@@ -350,7 +345,6 @@ class StandardWikitext {
 	}
 
 	public static function fixSpacing( $wikitext ) {
-
 		// Fix tabs in code blocks
 		$wikitext = preg_replace( "/^  {8}/m", " \t\t\t\t", $wikitext );
 		$wikitext = preg_replace( "/^  {6}/m", " \t\t\t", $wikitext );

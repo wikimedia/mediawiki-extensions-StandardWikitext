@@ -6,8 +6,6 @@ if ( $IP === false ) {
 }
 require_once "$IP/maintenance/Maintenance.php";
 
-use MediaWiki\MediaWikiServices;
-
 class fixWikitext extends Maintenance {
 
 	public function execute() {
@@ -32,8 +30,8 @@ class fixWikitext extends Maintenance {
 			$Content = $Page->getContent();
 			$wikitext = ContentHandler::getContentText( $Content );
 
-            // Standardize wikitext
-            $fixed = StandardWikitext::fixWikitext( $wikitext );
+			// Standardize wikitext
+			$fixed = StandardWikitext::fixWikitext( $wikitext );
 			if ( $fixed === $wikitext ) {
 				$this->output( ' .. ok' . PHP_EOL );
 				continue;
