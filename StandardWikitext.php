@@ -185,16 +185,24 @@ class StandardWikitext {
 
 			$title = $parts[0];
 
+			// Fix fake external link
+			// @todo Make more robust
+			if ( preg_match( '#^https?://#', $title ) ) {
+				$link = "[$link]";
+				$wikitext = str_replace( $original, $link, $wikitext );
+				continue;
+			}
+
 			$params = array_slice( $parts, 1 );
 
 			// [[ foo ]] → [[foo]]
 			$title = trim( $title );
 
-			// [[test_link]] → [[test link]]
-			$title = str_replace( '_', ' ', $title );
-
 			// [[Fo%C3%B3]] → [[Foó]]
 			$title = urldecode( $title );
+
+			// [[test_link]] → [[test link]]
+			$title = str_replace( '_', ' ', $title );
 
 			$Title = Title::newFromText( $title );
 
