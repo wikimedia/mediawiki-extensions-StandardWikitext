@@ -205,7 +205,9 @@ class StandardWikitext {
 			$title = str_replace( '_', ' ', $title );
 
 			$Title = Title::newFromText( $title );
-
+			if ( !$Title ) {
+				continue;
+			}
 			$namespace = $Title->getNamespace();
 
 			// File link: [[File:Foo.jpg|thumb|Caption with [[sub_link]].]]
