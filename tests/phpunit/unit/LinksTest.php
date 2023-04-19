@@ -2,58 +2,58 @@
 
 /**
  * @group Links
+ * @covers StandardWikitext::fixLinks
  */
 class LinksTest extends MediaWikiUnitTestCase {
 
-    public function testFixLink(): void {
-
-        // No changes
-        $this->assertEquals( StandardWikitext::fixLinks( "[[foo]]" ), "[[foo]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[foo]]s" ), "[[foo]]s" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[Foo|bar]]" ), "[[Foo|bar]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[Foo|bar_baz]]" ), "[[Foo|bar_baz]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "foo\n[[bar]]\nbaz" ), "foo\n[[bar]]\nbaz" );
+	public function testFixLink(): void {
+		// No changes
+		$this->assertEquals( "[[foo]]", StandardWikitext::fixLinks( "[[foo]]" ) );
+		$this->assertEquals( "[[foo]]s", StandardWikitext::fixLinks( "[[foo]]s" ) );
+		$this->assertEquals( "[[Foo|bar]]", StandardWikitext::fixLinks( "[[Foo|bar]]" ) );
+		$this->assertEquals( "[[Foo|bar_baz]]", StandardWikitext::fixLinks( "[[Foo|bar_baz]]" ) );
+		$this->assertEquals( "foo [[bar]] baz", StandardWikitext::fixLinks( "foo [[bar]] baz" ) );
+		$this->assertEquals( "[[foo+bar]]", StandardWikitext::fixLinks( "[[foo+bar]]" ) );
 
 		// Fix fake external links
-        $this->assertEquals( StandardWikitext::fixLinks( "[[https://foo.com]]" ), "[https://foo.com]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[https://foo.com Foo]]" ), "[https://foo.com Foo]" );
+		$this->assertEquals( "[https://foo.com]", StandardWikitext::fixLinks( "[[https://foo.com]]" ) );
+		$this->assertEquals( "[https://foo.com Foo]", StandardWikitext::fixLinks( "[[https://foo.com Foo]]" ) );
 
-        // Capitalization
-        $this->assertEquals( StandardWikitext::fixLinks( "[[foo|bar]]" ), "[[Foo|bar]]" );
+		// Capitalization
+		$this->assertEquals( "[[Foo|bar]]", StandardWikitext::fixLinks( "[[foo|bar]]" ) );
 
-        // Underscores
-        $this->assertEquals( StandardWikitext::fixLinks( "[[foo_bar]]" ), "[[foo bar]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[Foo_bar|baz]]" ), "[[Foo bar|baz]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[foo|bar_baz]]" ), "[[Foo|bar_baz]]" );
+		// Underscores
+		$this->assertEquals( "[[foo bar]]", StandardWikitext::fixLinks( "[[foo_bar]]" ) );
+		$this->assertEquals( "[[Foo bar|baz]]", StandardWikitext::fixLinks( "[[Foo_bar|baz]]" ) );
+		$this->assertEquals( "[[Foo|bar_baz]]", StandardWikitext::fixLinks( "[[foo|bar_baz]]" ) );
 
-        // Spacing
-        $this->assertEquals( StandardWikitext::fixLinks( "[[ foo ]]" ), "[[foo]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[ foo | bar ]]" ), "[[Foo|bar]]" );
+		// Spacing
+		$this->assertEquals( "[[foo]]", StandardWikitext::fixLinks( "[[ foo ]]" ) );
+		$this->assertEquals( "[[Foo|bar]]", StandardWikitext::fixLinks( "[[ foo | bar ]]" ) );
 
-        // Other
-        $this->assertEquals( StandardWikitext::fixLinks( "[[foo|foo]]" ), "[[foo]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[fo%C3%B3]]" ), "[[foó]]" );
-    }
+		// Other
+		$this->assertEquals( "[[foo]]", StandardWikitext::fixLinks( "[[foo|foo]]" ) );
+		$this->assertEquals( "[[foó]]", StandardWikitext::fixLinks( "[[fo%C3%B3]]" ) );
+	}
 
-    public function testFixFileLink(): void {
+	public function testFixFileLink(): void {
+		// No changes
+		$this->assertEquals( "[[File:Foo.jpg]]", StandardWikitext::fixLinks( "[[File:Foo.jpg]]" ) );
+		$this->assertEquals( "[[File:Foo.jpg|thumb]]", StandardWikitext::fixLinks( "[[File:Foo.jpg|thumb]]" ) );
+		$this->assertEquals( "[[File:Foo.jpg|thumb|300px]]", StandardWikitext::fixLinks( "[[File:Foo.jpg|thumb|300px]]" ) );
+		$this->assertEquals( "[[File:Foo.jpg|thumb|300px|Caption]]", StandardWikitext::fixLinks( "[[File:Foo.jpg|thumb|300px|Caption]]" ) );
+		$this->assertEquals( "[[:File:Foo.jpg]]", StandardWikitext::fixLinks( "[[:File:Foo.jpg]]" ) );
 
-        // No changes
-        $this->assertEquals( StandardWikitext::fixLinks( "[[File:Foo.jpg]]" ), "[[File:Foo.jpg]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[File:Foo.jpg|thumb]]" ), "[[File:Foo.jpg|thumb]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[File:Foo.jpg|thumb|300px]]" ), "[[File:Foo.jpg|thumb|300px]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[File:Foo.jpg|thumb|300px|Caption]]" ), "[[File:Foo.jpg|thumb|300px|Caption]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[:File:Foo.jpg]]" ), "[[:File:Foo.jpg]]" );
+		// Underscores
+		$this->assertEquals( "[[File:Foo bar.jpg]]", StandardWikitext::fixLinks( "[[File:Foo_bar.jpg]]" ) );
 
-        // Underscores
-        $this->assertEquals( StandardWikitext::fixLinks( "[[File:Foo_bar.jpg]]" ), "[[File:Foo bar.jpg]]" );
+		// Spacing
+		$this->assertEquals( "[[File:Foo.jpg]]", StandardWikitext::fixLinks( "[[ File:Foo.jpg ]]" ) );
+		$this->assertEquals( "[[File:Foo.jpg|thumb]]", StandardWikitext::fixLinks( "[[ File:Foo.jpg | thumb ]]" ) );
 
-        // Spacing
-        $this->assertEquals( StandardWikitext::fixLinks( "[[ File:Foo.jpg ]]" ), "[[File:Foo.jpg]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[ File:Foo.jpg | thumb ]]" ), "[[File:Foo.jpg|thumb]]" );
-
-        // Other
-        $this->assertEquals( StandardWikitext::fixLinks( "[[File:Foo.jpg|thumb|right]]" ), "[[File:Foo.jpg|thumb]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[File:Foo.jpg|right|thumb]]" ), "[[File:Foo.jpg|thumb]]" );
-        $this->assertEquals( StandardWikitext::fixLinks( "[[File:Foo.jpg|right|thumb|300px]]" ), "[[File:Foo.jpg|thumb|300px]]" );
-    }
+		// Other
+		$this->assertEquals( "[[File:Foo.jpg|thumb]]", StandardWikitext::fixLinks( "[[File:Foo.jpg|thumb|right]]" ) );
+		$this->assertEquals( "[[File:Foo.jpg|thumb]]", StandardWikitext::fixLinks( "[[File:Foo.jpg|right|thumb]]" ) );
+		$this->assertEquals( "[[File:Foo.jpg|thumb|300px]]", StandardWikitext::fixLinks( "[[File:Foo.jpg|right|thumb|300px]]" ) );
+	}
 }

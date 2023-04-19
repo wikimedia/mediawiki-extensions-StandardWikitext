@@ -2,6 +2,7 @@
 
 /**
  * @group Tables
+ * @covers StandardWikitext::fixTables
  */
 class TablesTest extends MediaWikiUnitTestCase {
 
@@ -10,10 +11,9 @@ class TablesTest extends MediaWikiUnitTestCase {
 		$this->assertEquals( "{|\n! Header\n| Cell\n|}", StandardWikitext::fixTables( "{|\n! Header\n| Cell\n|}" ) );
 		$this->assertEquals( "{| class=\"wikitable\"\n! Header\n| Cell\n|}", StandardWikitext::fixTables( "{| class=\"wikitable\"\n! Header\n| Cell\n|}" ) );
 
-		// Spacing
+		// Add leading spaces
 		$this->assertEquals( "{|\n! Header\n! Header\n| Cell\n| Cell\n|}", StandardWikitext::fixTables( "{|\n!Header!!Header\n|Cell||Cell\n|}" ) );
 		$this->assertEquals( "{|\n! Header\n| Cell\n|}", StandardWikitext::fixTables( "{|\n!Header\n|Cell\n|}" ) );
-		$this->assertEquals( "{|\n! Header\n| Cell\n|}", StandardWikitext::fixTables( "{|\n! Header \n| Cell \n|}" ) );
 
 		// Remove empty caption
 		$this->assertEquals( "{|\n! Header\n| Cell\n|}", StandardWikitext::fixTables( "{|\n|+\n! Header\n| Cell\n|}" ) );

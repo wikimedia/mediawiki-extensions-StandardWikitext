@@ -2,6 +2,7 @@
 
 /**
  * @group References
+ * @covers StandardWikitext::fixReferences
  */
 class ReferencesTest extends MediaWikiUnitTestCase {
 

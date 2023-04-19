@@ -56,65 +56,78 @@ class StandardWikitext {
 		$templates = self::getElements( '{{', '}}', $wikitext );
 		foreach ( $templates as $template ) {
 
-			// Store original wikitext to replace it later
+			// Store original wikitext to be able to replace it later
 			$original = $template;
 
 			// Remove outer braces
 			$template = preg_replace( "/^\{\{/", "", $template );
 			$template = preg_replace( "/\}\}$/", "", $template );
 
-			$pipe = strpos( $template, '|' );
-			$title = substr( $template, 0, $pipe );
-			$params = substr( $template, $pipe );
-
-			// Restore leading newline to params if there was one
-			if ( $params && substr( $title, -1 ) === "\n" ) {
-				$params = "\n$params";
+			// Replace all nested templates, tables and links to prevent havoc
+			$subelements = self::getElements( '{{', '}}', $template );
+			$subelements += self::getElements( '{|', '|}', $template );
+			$subelements += self::getElements( '[[', ']]', $template );
+			foreach ( $subelements as $key => $subelement ) {
+				$placeholder = '@@@' . $key . '@@@';
+				$template = str_replace( $subelement, $placeholder, $template );
 			}
 
-			// {{ Foo }} → {{Foo}}
-			$title = trim( $title );
+			// Get the template parts
+			$params = explode( '|', $template );
+			$params = array_map( 'trim', $params );
+			$title = array_shift( $params );
+
+			// Inline format
+			if ( strpos( $template, "\n|" ) === false ) {
+
+				// Rebuild the template
+				$template = $title;
+				foreach ( $params as $param ) {
+					$parts = explode( '=', $param, 2 );
+					if ( count( $parts ) === 2 ) {
+						$key = trim( $parts[0] );
+						$value = trim( $parts[1], ' ' );
+						if ( $value ) {
+							$template .= "|$key=$value";
+						}
+					} else {
+						$value = trim( $parts[0], ' ' );
+						$template .= "|$value";
+					}
+				}
 
 			// Block format
-			if ( preg_match( "/\n *\|/", $template ) ) {
+			} else {
 
 				// Force capitalization
 				$title = ucfirst( $title );
 
-				// Fix spacing of anonymous parameters
-				$params = preg_replace( "/ *\| */", "| ", $params );
-
-				// Fix spacing of named parameters (careful with = signs in URLs)
-				$params = preg_replace( "/^ ?\|([^=]+)=/m", "| $1 = ", $params );
-
-			// Inline format
-			} else {
-
-				// Fix spacing around parameters
-				$params = trim( $params );
-
-				// Fix spacing of anonymous parameters
-				$params = preg_replace( "/ *\| */", "|", $params );
-
-				// Fix spacing of named parameters
-				$params = preg_replace( "/ *= */", "=", $params );
-
-				// Remove empty parameters
-				$params = preg_replace( "/\|[^=]+=($|\|)/", "$1", $params );
+				// Rebuild the template
+				$template = $title;
+				foreach ( $params as $param ) {
+					$parts = explode( '=', $param, 2 );
+					if ( count( $parts ) === 2 ) {
+						$key = trim( $parts[0] );
+						$value = trim( $parts[1], ' ' );
+						if ( $value ) {
+							$template .= "\n| $key = $value";
+						}
+					} else {
+						$value = trim( $parts[0], ' ' );
+						$template .= "\n| $value";
+					}
+				}
+				$template .= "\n";
 			}
 
-			// Remove extra spaces
-			$params = preg_replace( "/  +/", " ", $params );
+			// Restore replaced subelements
+			foreach ( $subelements as $key => $subelement ) {
+				$placeholder = '@@@' . $key . '@@@';
+				$template = str_replace( $placeholder, $subelement, $template );
+			}
 
 			// Restore outer braces
-			$template = "{{" . $title . $params . "}}";
-
-			// Give standalone templates some room
-			$position = strpos( $wikitext, $original );
-			$previous = $position === 0 ? $position : $position - 1;
-			if ( substr( $wikitext, $previous, 1 ) === "\n" ) {
-				$template = "\n\n" . $template . "\n\n";
-			}
+			$template = '{{' . $template . '}}';
 
 			// Replace original wikitext for fixed one
 			$wikitext = str_replace( $original, $template, $wikitext );
@@ -123,46 +136,36 @@ class StandardWikitext {
 	}
 
 	public static function fixTables( $wikitext ) {
-		$tables = self::getElements( '{|', '|}', $wikitext );
+		$tables = self::getElements( "{|", "\n|}", $wikitext );
 		foreach ( $tables as $table ) {
 
 			// Store original wikitext to replace it later
 			$original = $table;
 
-			// Remove multiple newlines
-			$table = preg_replace( "/\n\n+/", "\n", $table );
-
 			// Flatten the table
 			$table = preg_replace( "/\!\!/", "\n!", $table );
 			$table = preg_replace( "/\|\|/", "\n|", $table );
 
-			// Remove trailing spaces
-			$table = preg_replace( "/ +\n/", "\n", $table );
-
-			// Add missing spaces
-			$table = preg_replace( "/\n([|!][-+}]?)([^ +}\n-])/", "\n$1 $2", $table );
+			// Add leading spaces
+			$table = preg_replace( "/^!([^ \n]+)$/m", "! $1", $table ); // Headers
+			$table = preg_replace( "/^\|\+([^ \n]+)$/m", "|+ $1", $table ); // Captions
+			$table = preg_replace( "/^\|-([^ \n]+)$/m", "|- $1", $table ); // Newrows
+			$table = preg_replace( "/^\|([^ \n}+-]+)$/m", "| $1", $table ); // Cells
 
 			// Remove empty captions
-			$table = preg_replace( "/\n\|\+\n/", "\n", $table );
+			$table = preg_replace( "/^\|\+ *\n/m", "", $table );
 
 			// Remove newrow after caption
-			$table = preg_replace( "/(\n\|\+[^\n]+)\n\|\-/", "$1", $table );
+			$table = preg_replace( "/^(\|\+[^\n]+)\n\|\-/m", "$1", $table );
 
-			// Fix pseudo-headers
-			$table = preg_replace( "/\n[|!]\+? *'''([^\n]+)'''/", "\n! $1", $table );
+			// Remove bold from headers and captions and fix pseudo-headers
+			$table = preg_replace( "/^[!|]\+? *'''([^\n]+)'''/m", "! $1", $table );
 
 			// Remove leading newrow
 			$table = preg_replace( "/^(\{\|[^\n]*\n)\|\-\n/", "$1", $table );
 
 			// Remove trailing newrow
-			$table = preg_replace( "/\|\-\n\|\}$/", "|}", $table );
-
-			// Give standalone tables some room
-			$position = strpos( $wikitext, $original );
-			$previous = $position === 0 ? $position : $position - 1;
-			if ( substr( $wikitext, $previous, 1 ) === "\n" ) {
-				$table = "\n\n" . $table . "\n\n";
-			}
+			$table = preg_replace( "/\n\|\-\n\|\}$/", "\n|}", $table );
 
 			// Replace original wikitext for fixed one
 			$wikitext = str_replace( $original, $table, $wikitext );
@@ -199,7 +202,7 @@ class StandardWikitext {
 			$title = trim( $title );
 
 			// [[Fo%C3%B3]] → [[Foó]]
-			$title = urldecode( $title );
+			$title = rawurldecode( $title );
 
 			// [[test_link]] → [[test link]]
 			$title = str_replace( '_', ' ', $title );
@@ -260,15 +263,6 @@ class StandardWikitext {
 
 			// Restore outer braces
 			$link = "[[$link]]";
-
-			// Give standalone file links some room
-			if ( $namespace === 6 ) {
-				$position = strpos( $wikitext, $original );
-				$previous = $position === 0 ? $position : $position - 1;
-				if ( substr( $wikitext, $previous, 1 ) === "\n" ) {
-					$link = "\n\n" . $link . "\n\n";
-				}
-			}
 
 			// Replace original wikitext for fixed one
 			$wikitext = str_replace( $original, $link, $wikitext );
@@ -355,6 +349,24 @@ class StandardWikitext {
 	}
 
 	public static function fixSpacing( $wikitext ) {
+		// Give block templates some room
+		$templates = self::getElements( "\n{{", "}}\n", $wikitext );
+		foreach ( $templates as $template ) {
+			$wikitext = str_replace( $template, "\n$template\n", $wikitext );
+		}
+
+		// Give tables some room
+		$tables = self::getElements( "\n{|", "\n|}", $wikitext );
+		foreach ( $tables as $table ) {
+			$wikitext = str_replace( $table, "\n$table\n", $wikitext );
+		}
+
+		// Give standalone links (usually file links) some room
+		$links = self::getElements( "\n[[", "]]\n", $wikitext );
+		foreach ( $links as $link ) {
+			$wikitext = str_replace( $link, "\n$link\n", $wikitext );
+		}
+
 		// Fix tabs in code blocks
 		$wikitext = preg_replace( "/^  {8}/m", " \t\t\t\t", $wikitext );
 		$wikitext = preg_replace( "/^  {6}/m", " \t\t\t", $wikitext );
@@ -398,21 +410,21 @@ class StandardWikitext {
 			$depth = 0;
 			for ( $position = $start; $position < strlen( $wikitext ); $position++ ) {
 				if ( substr( $wikitext, $position, strlen( $prefix ) ) === $prefix ) {
-					$position++;
+					$position += strlen( $prefix );
 					$depth++;
 				}
 				if ( substr( $wikitext, $position, strlen( $suffix ) ) === $suffix ) {
-					$position++;
+					$position += strlen( $suffix );
 					$depth--;
 				}
 				if ( !$depth ) {
 					break;
 				}
 			}
-			$end = $position - $start + 1;
+			$end = $position - $start;
 			$element = substr( $wikitext, $start, $end );
 			$elements[] = $element;
-			$start = strpos( $wikitext, $prefix, $position );
+			$start = strpos( $wikitext, $prefix, $start + 1 );
 		}
 		return $elements;
 	}
