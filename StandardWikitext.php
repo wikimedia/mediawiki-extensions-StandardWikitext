@@ -147,10 +147,10 @@ class StandardWikitext {
 			$table = preg_replace( "/\|\|/", "\n|", $table );
 
 			// Add leading spaces
-			$table = preg_replace( "/^!([^ \n]+)$/m", "! $1", $table ); // Headers
-			$table = preg_replace( "/^\|\+([^ \n]+)$/m", "|+ $1", $table ); // Captions
-			$table = preg_replace( "/^\|-([^ \n]+)$/m", "|- $1", $table ); // Newrows
-			$table = preg_replace( "/^\|([^ \n}+-]+)$/m", "| $1", $table ); // Cells
+			$table = preg_replace( "/^!([^ \n])/m", "! $1", $table ); // Headers
+			$table = preg_replace( "/^\|\+([^ \n])/m", "|+ $1", $table ); // Captions
+			$table = preg_replace( "/^\|-([^ \n])/m", "|- $1", $table ); // Newrows
+			$table = preg_replace( "/^\|([^ \n}+-])/m", "| $1", $table ); // Cells
 
 			// Remove empty captions
 			$table = preg_replace( "/^\|\+ *\n/m", "", $table );
@@ -158,8 +158,14 @@ class StandardWikitext {
 			// Remove newrow after caption
 			$table = preg_replace( "/^(\|\+[^\n]+)\n\|\-/m", "$1", $table );
 
-			// Remove bold from headers and captions and fix pseudo-headers
-			$table = preg_replace( "/^[!|]\+? *'''([^\n]+)'''/m", "! $1", $table );
+			// Remove bold from captions
+			$table = preg_replace( "/^\|\+ *'''(.*)'''/m", "|+ $1", $table );
+
+			// Remove bold from headers
+			$table = preg_replace( "/^! *'''(.*)'''/m", "! $1", $table );
+
+			// Fix pseudo-headers
+			$table = preg_replace( "/^\| *'''(.*)'''/m", "! $1", $table );
 
 			// Remove leading newrow
 			$table = preg_replace( "/^(\{\|[^\n]*\n)\|\-\n/", "$1", $table );
