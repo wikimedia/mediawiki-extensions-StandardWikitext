@@ -367,8 +367,9 @@ class StandardWikitext {
 			$wikitext = str_replace( $table, "\n$table\n", $wikitext );
 		}
 
-		// Give standalone links (usually file links) some room
-		$links = self::getElements( "\n[[", "]]\n", $wikitext );
+		// Give standalone file links some room
+		// @todo i18n
+		$links = self::getElements( "\n[[File:", "]]\n", $wikitext );
 		foreach ( $links as $link ) {
 			$wikitext = str_replace( $link, "\n$link\n", $wikitext );
 		}
