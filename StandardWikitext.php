@@ -87,7 +87,7 @@ class StandardWikitext {
 					if ( count( $parts ) === 2 ) {
 						$key = trim( $parts[0] );
 						$value = trim( $parts[1], ' ' );
-						if ( $value ) {
+						if ( $value === '' ) {
 							$template .= "|$key=$value";
 						}
 					} else {
@@ -109,7 +109,7 @@ class StandardWikitext {
 					if ( count( $parts ) === 2 ) {
 						$key = trim( $parts[0] );
 						$value = trim( $parts[1], ' ' );
-						if ( $value ) {
+						if ( $value === '' ) {
 							$template .= "\n| $key = $value";
 						}
 					} else {
