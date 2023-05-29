@@ -414,18 +414,18 @@ class StandardWikitext {
 			$depth = 0;
 			for ( $position = $start; $position < strlen( $wikitext ); $position++ ) {
 				if ( substr( $wikitext, $position, strlen( $prefix ) ) === $prefix ) {
-					$position += strlen( $prefix );
+					$position += strlen( $prefix ) - 1;
 					$depth++;
 				}
 				if ( substr( $wikitext, $position, strlen( $suffix ) ) === $suffix ) {
-					$position += strlen( $suffix );
+					$position += strlen( $suffix ) - 1;
 					$depth--;
 				}
 				if ( !$depth ) {
 					break;
 				}
 			}
-			$end = $position - $start;
+			$end = $position - $start + 1;
 			$element = substr( $wikitext, $start, $end );
 			$elements[] = $element;
 			$start = strpos( $wikitext, $prefix, $start + 1 );
