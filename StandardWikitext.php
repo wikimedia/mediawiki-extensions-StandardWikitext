@@ -314,9 +314,6 @@ class StandardWikitext {
 		// Fix unordered lists with wrong items
 		$wikitext = preg_replace( "/^-/m", "*", $wikitext );
 
-		// Fix ordered lists with wrong items
-		$wikitext = preg_replace( "/^\d\./m", "#", $wikitext );
-
 		// Remove extra spaces between list items
 		$wikitext = preg_replace( "/^([*#]) ?([*#])? ?([*#])?/m", "$1$2$3", $wikitext );
 

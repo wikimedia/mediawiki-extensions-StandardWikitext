@@ -15,9 +15,6 @@ class ListsTest extends MediaWikiUnitTestCase {
 		// Fix unordered lists with wrong items
 		$this->assertEquals( "* a\n* b\n* c", StandardWikitext::fixLists( "- a\n- b\n- c" ) );
 
-		// Fix ordered lists with wrong items
-		$this->assertEquals( "# a\n# b\n# c", StandardWikitext::fixLists( "1. a\n2. b\n3. c" ) );
-
 		// Remove extra spaces between list items
 		$this->assertEquals( "* a\n** b\n*** c", StandardWikitext::fixLists( "*a\n* *b\n* * *c" ) );
 
