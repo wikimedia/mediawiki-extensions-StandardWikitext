@@ -311,9 +311,6 @@ class StandardWikitext {
 		// Don't confuse a redirect with a numbered list
 		$wikitext = preg_replace( "/^#(.+ ?\[\[.+\]\])/", "@@@$1", $wikitext );
 
-		// Fix unordered lists with wrong items
-		$wikitext = preg_replace( "/^-/m", "*", $wikitext );
-
 		// Remove extra spaces between list items
 		$wikitext = preg_replace( "/^([*#]) ?([*#])? ?([*#])?/m", "$1$2$3", $wikitext );
 
