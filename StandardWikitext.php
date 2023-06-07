@@ -57,6 +57,7 @@ class StandardWikitext {
 		$wikitext = self::fixReferences( $wikitext );
 		$wikitext = self::fixLists( $wikitext );
 		$wikitext = self::fixSections( $wikitext );
+		$wikitext = self::fixCategories( $wikitext );
 		$wikitext = self::fixSpacing( $wikitext );
 		return $wikitext;
 	}
@@ -356,6 +357,26 @@ class StandardWikitext {
 
 		return $wikitext;
 	}
+
+	/**
+	 * Move categories to the bottom
+	 * @todo Only works in English
+	 */
+    public static function fixCategories( $wikitext ) {
+		$count = preg_match_all( "/\n*\[\[ ?[Cc]ategory ?: ?([^]]+) ?\]\]/", $wikitext, $matches );
+		if ( $count ) {
+			foreach ( $matches[0] as $match ) {
+				$wikitext = str_replace( $match, '', $wikitext );
+			}
+			$categories = $matches[1];
+			$categories = array_unique( $categories );
+			$wikitext .= "\n";
+			foreach ( $categories as $category ) {
+				$wikitext .= "\n[[Category:$category]]";
+			}
+		}
+		return $wikitext;
+    }
 
 	public static function fixSpacing( $wikitext ) {
 		// Give block templates some room
