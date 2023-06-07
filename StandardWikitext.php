@@ -45,7 +45,7 @@ class StandardWikitext {
 		$user = User::newSystemUser( $wgStandardWikitextAccount );
 		$updater = $wikiPage->newPageUpdater( $user );
 		$updater->setContent( 'main', $content );
-		$summary = wfMessage( 'standardwikitext-summary' )->text();
+		$summary = wfMessage( 'standardwikitext-summary' )->inContentLanguage()->text();
 		$comment = CommentStoreComment::newUnsavedComment( $summary );
 		$updater->saveRevision( $comment, EDIT_SUPPRESS_RC | EDIT_FORCE_BOT | EDIT_MINOR | EDIT_INTERNAL );
 	}
