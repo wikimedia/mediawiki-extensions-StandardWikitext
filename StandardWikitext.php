@@ -2,10 +2,21 @@
 
 class StandardWikitext {
 
-	public static function onParserPreSaveTransformComplete( Parser $parser, string &$wikitext ) {
-		global $wgStandardWikitextNamespaces;
+	public static function onPageSaveComplete( WikiPage $wikiPage, MediaWiki\User\UserIdentity $user, string $summary, int $flags, MediaWiki\Revision\RevisionRecord $revisionRecord, MediaWiki\Storage\EditResult $editResult ) {
+		global $wgStandardWikitextAccount, $wgStandardWikitextNamespaces;
 
-		$title = $parser->getTitle();
+		// Prevent infinite loops
+		if ( $user->getName() === $wgStandardWikitextAccount ) {
+			return;
+		}
+
+		// If a user tries to revert an edit done by this script, don't insist
+		if ( $editResult->isRevert() ) {
+			return;
+		}
+
+		// Check if the wikitext should be fixed
+		$title = $wikiPage->getTitle();
 		$contentModel = $title->getContentModel();
 		if ( $contentModel !== CONTENT_MODEL_WIKITEXT ) {
 			return;
@@ -15,40 +26,38 @@ class StandardWikitext {
 			return;
 		}
 
-		$wikitext = self::fixWikitext( $wikitext );
+		// Check if fixing the wikitext changes anything
+		$content = $wikiPage->getContent();
+		$wikitext = ContentHandler::getContentText( $content );
+		$fixed = self::fixWikitext( $wikitext );
+		if ( $fixed === $wikitext ) {
+			return;
+		}
+
+		// Save the fixed wikitext
+		self::saveWikitext( $fixed, $wikiPage );
+	}
+
+	public static function saveWikitext( $wikitext, $wikiPage ) {
+		global $wgStandardWikitextAccount;
+		$title = $wikiPage->getTitle();
+		$content = ContentHandler::makeContent( $wikitext, $title );
+		$user = User::newSystemUser( $wgStandardWikitextAccount );
+		$updater = $wikiPage->newPageUpdater( $user );
+		$updater->setContent( 'main', $content );
+		$summary = wfMessage( 'standardwikitext-summary' )->text();
+		$comment = CommentStoreComment::newUnsavedComment( $summary );
+		$updater->saveRevision( $comment, EDIT_SUPPRESS_RC | EDIT_FORCE_BOT | EDIT_MINOR | EDIT_INTERNAL );
 	}
 
 	public static function fixWikitext( $wikitext ) {
-		global $wgStandardWikitextModules;
-
-		if ( in_array( 'templates', $wgStandardWikitextModules ) ) {
-			$wikitext = self::fixTemplates( $wikitext );
-		}
-
-		if ( in_array( 'tables', $wgStandardWikitextModules ) ) {
-			$wikitext = self::fixTables( $wikitext );
-		}
-
-		if ( in_array( 'links', $wgStandardWikitextModules ) ) {
-			$wikitext = self::fixLinks( $wikitext );
-		}
-
-		if ( in_array( 'references', $wgStandardWikitextModules ) ) {
-			$wikitext = self::fixReferences( $wikitext );
-		}
-
-		if ( in_array( 'lists', $wgStandardWikitextModules ) ) {
-			$wikitext = self::fixLists( $wikitext );
-		}
-
-		if ( in_array( 'sections', $wgStandardWikitextModules ) ) {
-			$wikitext = self::fixSections( $wikitext );
-		}
-
-		if ( in_array( 'spacing', $wgStandardWikitextModules ) ) {
-			$wikitext = self::fixSpacing( $wikitext );
-		}
-
+		$wikitext = self::fixTemplates( $wikitext );
+		$wikitext = self::fixTables( $wikitext );
+		$wikitext = self::fixLinks( $wikitext );
+		$wikitext = self::fixReferences( $wikitext );
+		$wikitext = self::fixLists( $wikitext );
+		$wikitext = self::fixSections( $wikitext );
+		$wikitext = self::fixSpacing( $wikitext );
 		return $wikitext;
 	}
 

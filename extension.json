@@ -1,6 +1,6 @@
 {
 	"name": "StandardWikitext",
-	"version": "1.8",
+	"version": "2.0",
 	"author": "[https://www.mediawiki.org/wiki/User:Sophivorus Sophivorus]",
 	"url": "https://www.mediawiki.org/wiki/Extension:StandardWikitext",
 	"descriptionmsg": "standardwikitext-desc",
@@ -18,23 +18,14 @@
 		"StandardWikitext": "StandardWikitext.php"
 	},
 	"Hooks": {
-		"ParserPreSaveTransformComplete": "StandardWikitext::onParserPreSaveTransformComplete"
+		"PageSaveComplete": "StandardWikitext::onPageSaveComplete"
 	},
 	"config": {
+		"StandardWikitextAccount": {
+			"value": "StandardWikitext bot"
+		},
 		"StandardWikitextNamespaces": {
 			"value": [ 0 ],
-			"merge_strategy": "provide_default"
-		},
-		"StandardWikitextModules": {
-			"value": [
-				"templates",
-				"tables",
-				"links",
-				"references",
-				"lists",
-				"sections",
-				"spacing"
-			],
 			"merge_strategy": "provide_default"
 		}
 	},

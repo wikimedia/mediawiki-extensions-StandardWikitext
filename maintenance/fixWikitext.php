@@ -6,44 +6,43 @@ if ( $IP === false ) {
 }
 require_once "$IP/maintenance/Maintenance.php";
 
+use MediaWiki\MediaWikiServices;
+
 class fixWikitext extends Maintenance {
 
 	public function execute() {
-		global $wgStandardWikitextNamespaces;
+		global $wgStandardWikitextAccount, $wgStandardWikitextNamespaces;
 
-		// Get pages to standardise
-		$dbw = wfGetDB( DB_PRIMARY );
-		$results = $dbw->select( 'page', 'page_id', [
+		// Get the pages to standardise
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbr = $lb->getConnection( DB_REPLICA );
+		$results = $dbr->select( 'page', 'page_id', [
 			'page_content_model' => CONTENT_MODEL_WIKITEXT,
 			'page_namespace' => $wgStandardWikitextNamespaces
 		] );
 		foreach ( $results as $result ) {
 
-			// Get working title
+			// Get the working title
 			$id = $result->page_id;
-			$Title = Title::newFromID( $id );
-			$title = $Title->getFullText();
-			$this->output( $title );
+			$title = Title::newFromID( $id );
+			$text = $title->getFullText();
+			$this->output( $text );
 
-			// Get wikitext
-			$Page = WikiPage::factory( $Title );
-			$Content = $Page->getContent();
-			$wikitext = ContentHandler::getContentText( $Content );
+			// Get the wikitext
+			$wikiPage = WikiPage::factory( $title );
+			$content = $wikiPage->getContent();
+			$wikitext = ContentHandler::getContentText( $content );
 
-			// Standardize wikitext
+			// Check if fixing the wikitext changes anything
 			$fixed = StandardWikitext::fixWikitext( $wikitext );
 			if ( $fixed === $wikitext ) {
 				$this->output( ' .. ok' . PHP_EOL );
 				continue;
 			}
 
-			// Save wikitext
-			$Content = ContentHandler::makeContent( $wikitext, $Title );
-			$User = User::newSystemUser( 'Wikitext standardization bot' );
-			$Updater = $Page->newPageUpdater( $User );
-			$Updater->setContent( 'main', $Content );
-			$Updater->saveRevision( CommentStoreComment::newUnsavedComment( 'Standardize wikitext' ), EDIT_SUPPRESS_RC );
-			$this->output( ' .. fixed' . PHP_EOL );
+			// Save the fixed wikitext
+			StandardWikitext::saveWikitext( $fixed, $wikiPage );
+			$this->output( ' .. fix' . PHP_EOL );
 		}
 	}
 }

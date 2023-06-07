@@ -4,5 +4,6 @@
 			"Sophivorus"
 		]
 	},
-	"standardwikitext-desc": "Standardizes and fixes wikitext when the page is saved."
+	"standardwikitext-desc": "Standardizes and fixes wikitext when the page is saved.",
+	"standardwikitext-summary": "Standardize wikitext"
 }
