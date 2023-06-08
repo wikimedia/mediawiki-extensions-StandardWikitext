@@ -2,5 +2,6 @@
 	"@metadata": {
 		"authors": []
 	},
-	"standardwikitext-desc": "Vereinheitlicht und korrigiert den Wikitext, wenn die Seite gespeichert wird."
+	"standardwikitext-desc": "Vereinheitlicht und korrigiert den Wikitext, wenn die Seite gespeichert wird.",
+	"standardwikitext-summary": "Wikitext standardisieren"
 }

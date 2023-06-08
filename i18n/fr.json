@@ -4,5 +4,6 @@
 			"Verdy p"
 		]
 	},
-	"standardwikitext-desc": "Normalise et corrige le wikicode quand une page est enregistrée."
+	"standardwikitext-desc": "Normalise et corrige le wikicode quand une page est enregistrée.",
+	"standardwikitext-summary": "Normaliser le wikicode"
 }
