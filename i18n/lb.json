@@ -1,8 +1,10 @@
 {
 	"@metadata": {
 		"authors": [
-			"Robby"
+			"Robby",
+			"Volvox"
 		]
 	},
-	"standardwikitext-desc": "Standardiséiert a verbessert de Wikitext wann d'Säit gespäichert gëtt."
+	"standardwikitext-desc": "Standardiséiert a verbessert de Wikitext wann d'Säit gespäichert gëtt.",
+	"standardwikitext-summary": "Wikitext standardiséieren"
 }
