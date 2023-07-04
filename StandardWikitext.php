@@ -360,9 +360,16 @@ class StandardWikitext {
 
 	/**
 	 * Move categories to the bottom
+	 * and remove duplicate categories
 	 * @todo Only works in English
 	 */
-    public static function fixCategories( $wikitext ) {
+	public static function fixCategories( $wikitext ) {
+		// Don't replace category links insides templates and parser functions
+		$templates = self::getElements( '{{', '}}', $wikitext );
+		foreach ( $templates as $i => $template ) {
+			$wikitext = str_replace( $template, "@@@$i@@@", $wikitext );
+		}
+
 		$count = preg_match_all( "/\n*\[\[ ?[Cc]ategory ?: ?([^]]+) ?\]\]/", $wikitext, $matches );
 		if ( $count ) {
 			foreach ( $matches[0] as $match ) {
@@ -375,8 +382,13 @@ class StandardWikitext {
 				$wikitext .= "\n[[Category:$category]]";
 			}
 		}
+
+		// Restore templates
+		foreach ( $templates as $i => $template ) {
+			$wikitext = str_replace( "@@@$i@@@", $template, $wikitext );
+		}
 		return $wikitext;
-    }
+	}
 
 	public static function fixSpacing( $wikitext ) {
 		// Give block templates some room

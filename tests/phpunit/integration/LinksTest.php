@@ -4,7 +4,7 @@
  * @group Links
  * @covers StandardWikitext::fixLinks
  */
-class LinksTest extends MediaWikiUnitTestCase {
+class LinksTest extends MediaWikiIntegrationTestCase {
 
 	public function testFixLink(): void {
 		// No changes
