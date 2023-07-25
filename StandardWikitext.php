@@ -51,11 +51,11 @@ class StandardWikitext {
 	}
 
 	public static function fixWikitext( $wikitext ) {
-		$wikitext = self::fixLists( $wikitext );
 		$wikitext = self::fixTemplates( $wikitext );
 		$wikitext = self::fixTables( $wikitext );
 		$wikitext = self::fixLinks( $wikitext );
 		$wikitext = self::fixReferences( $wikitext );
+		$wikitext = self::fixLists( $wikitext );
 		$wikitext = self::fixSections( $wikitext );
 		$wikitext = self::fixCategories( $wikitext );
 		$wikitext = self::fixSpacing( $wikitext );
