@@ -51,11 +51,11 @@ class StandardWikitext {
 	}
 
 	public static function fixWikitext( $wikitext ) {
+		$wikitext = self::fixLists( $wikitext );
 		$wikitext = self::fixTemplates( $wikitext );
 		$wikitext = self::fixTables( $wikitext );
 		$wikitext = self::fixLinks( $wikitext );
 		$wikitext = self::fixReferences( $wikitext );
-		$wikitext = self::fixLists( $wikitext );
 		$wikitext = self::fixSections( $wikitext );
 		$wikitext = self::fixCategories( $wikitext );
 		$wikitext = self::fixSpacing( $wikitext );
@@ -96,12 +96,12 @@ class StandardWikitext {
 					$parts = explode( '=', $param, 2 );
 					if ( count( $parts ) === 2 ) {
 						$key = trim( $parts[0] );
-						$value = trim( $parts[1], ' ' );
-						if ( $value !== '' ) {
+						$value = trim( $parts[1] );
+						if ( $value ) {
 							$template .= "|$key=$value";
 						}
 					} else {
-						$value = trim( $parts[0], ' ' );
+						$value = trim( $parts[0] );
 						$template .= "|$value";
 					}
 				}
@@ -118,12 +118,13 @@ class StandardWikitext {
 					$parts = explode( '=', $param, 2 );
 					if ( count( $parts ) === 2 ) {
 						$key = trim( $parts[0] );
-						$value = trim( $parts[1], ' ' );
-						if ( $value !== '' ) {
+						$value = trim( $parts[1] );
+						$value = preg_replace( "/^([*#])/", "\n$1", $value ); // Restore newlines before lists
+						if ( $value ) {
 							$template .= "\n| $key = $value";
 						}
 					} else {
-						$value = trim( $parts[0], ' ' );
+						$value = trim( $parts[0] );
 						$template .= "\n| $value";
 					}
 				}
@@ -364,7 +365,7 @@ class StandardWikitext {
 	 * @todo Only works in English
 	 */
 	public static function fixCategories( $wikitext ) {
-		// Don't replace category links insides templates and parser functions
+		// Don't replace category links inside templates and parser functions
 		$templates = self::getElements( '{{', '}}', $wikitext );
 		foreach ( $templates as $i => $template ) {
 			$wikitext = str_replace( $template, "@@@$i@@@", $wikitext );
