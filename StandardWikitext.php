@@ -97,11 +97,13 @@ class StandardWikitext {
 					if ( count( $parts ) === 2 ) {
 						$key = trim( $parts[0] );
 						$value = trim( $parts[1] );
+						$value = preg_replace( "/^([*#])/", "\n$1", $value ); // Restore newlines before lists
 						if ( $value ) {
 							$template .= "|$key=$value";
 						}
 					} else {
 						$value = trim( $parts[0] );
+						$value = preg_replace( "/^([*#])/", "\n$1", $value ); // Restore newlines before lists
 						$template .= "|$value";
 					}
 				}
@@ -125,6 +127,7 @@ class StandardWikitext {
 						}
 					} else {
 						$value = trim( $parts[0] );
+						$value = preg_replace( "/^([*#])/", "\n$1", $value ); // Restore newlines before lists
 						$template .= "\n| $value";
 					}
 				}
