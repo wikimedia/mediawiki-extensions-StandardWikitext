@@ -51,6 +51,12 @@ class StandardWikitext {
 	}
 
 	public static function fixWikitext( $wikitext ) {
+		// Don't try to fix stuff inside <html> blocks
+		$htmls = self::getElements( '<html>', '</html>', $wikitext );
+		foreach ( $htmls as $i => $html ) {
+			$wikitext = str_replace( $html, "@@@html$i@@@", $wikitext );
+		}
+
 		$wikitext = self::fixTemplates( $wikitext );
 		$wikitext = self::fixTables( $wikitext );
 		$wikitext = self::fixLinks( $wikitext );
@@ -59,6 +65,11 @@ class StandardWikitext {
 		$wikitext = self::fixSections( $wikitext );
 		$wikitext = self::fixCategories( $wikitext );
 		$wikitext = self::fixSpacing( $wikitext );
+
+		// Restore <html> blocks
+		foreach ( $htmls as $i => $html ) {
+			$wikitext = str_replace( "@@@html$i@@@", $html, $wikitext );
+		}
 		return $wikitext;
 	}
 
