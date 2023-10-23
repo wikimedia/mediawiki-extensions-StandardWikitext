@@ -11,7 +11,7 @@ use MediaWiki\MediaWikiServices;
 class fixWikitext extends Maintenance {
 
 	public function execute() {
-		global $wgStandardWikitextAccount, $wgStandardWikitextNamespaces;
+		global $wgStandardWikitextNamespaces;
 
 		// Get the pages to standardise
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();

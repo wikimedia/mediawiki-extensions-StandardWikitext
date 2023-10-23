@@ -1,8 +1,23 @@
 <?php
 
 class StandardWikitext {
-
-	public static function onPageSaveComplete( WikiPage $wikiPage, MediaWiki\User\UserIdentity $user, string $summary, int $flags, MediaWiki\Revision\RevisionRecord $revisionRecord, MediaWiki\Storage\EditResult $editResult ) {
+	/**
+	 * @param WikiPage $wikiPage
+	 * @param \MediaWiki\User\UserIdentity $user
+	 * @param string $summary
+	 * @param int $flags
+	 * @param \MediaWiki\Revision\RevisionRecord $revisionRecord
+	 * @param \MediaWiki\Storage\EditResult $editResult
+	 * @return void
+	 */
+	public static function onPageSaveComplete(
+		WikiPage $wikiPage,
+		MediaWiki\User\UserIdentity $user,
+		string $summary,
+		int $flags,
+		MediaWiki\Revision\RevisionRecord $revisionRecord,
+		MediaWiki\Storage\EditResult $editResult
+	) {
 		global $wgStandardWikitextAccount, $wgStandardWikitextNamespaces;
 
 		// Prevent infinite loops
@@ -38,7 +53,12 @@ class StandardWikitext {
 		self::saveWikitext( $fixed, $wikiPage );
 	}
 
-	public static function saveWikitext( $wikitext, $wikiPage ) {
+	/**
+	 * @param string $wikitext
+	 * @param WikiPage $wikiPage
+	 * @return void
+	 */
+	public static function saveWikitext( string $wikitext, WikiPage $wikiPage ) {
 		global $wgStandardWikitextAccount;
 		$title = $wikiPage->getTitle();
 		$content = ContentHandler::makeContent( $wikitext, $title );
@@ -50,7 +70,11 @@ class StandardWikitext {
 		$updater->saveRevision( $comment, EDIT_SUPPRESS_RC | EDIT_FORCE_BOT | EDIT_MINOR | EDIT_INTERNAL );
 	}
 
-	public static function fixWikitext( $wikitext ) {
+	/**
+	 * @param string $wikitext
+	 * @return array|string|string[]|null
+	 */
+	public static function fixWikitext( string $wikitext ) {
 		// Don't try to fix stuff inside <html> blocks
 		$htmls = self::getElements( '<html>', '</html>', $wikitext );
 		foreach ( $htmls as $i => $html ) {
@@ -73,7 +97,11 @@ class StandardWikitext {
 		return $wikitext;
 	}
 
-	public static function fixTemplates( $wikitext ) {
+	/**
+	 * @param string $wikitext
+	 * @return array|string|string[]
+	 */
+	public static function fixTemplates( string $wikitext ) {
 		$templates = self::getElements( '{{', '}}', $wikitext );
 		foreach ( $templates as $template ) {
 
@@ -108,20 +136,21 @@ class StandardWikitext {
 					if ( count( $parts ) === 2 ) {
 						$key = trim( $parts[0] );
 						$value = trim( $parts[1] );
-						$value = preg_replace( "/^([*#])/", "\n$1", $value ); // Restore newlines before lists
+						// Restore newlines before lists
+						$value = preg_replace( "/^([*#])/", "\n$1", $value );
 						if ( $value ) {
 							$template .= "|$key=$value";
 						}
 					} else {
 						$value = trim( $parts[0] );
-						$value = preg_replace( "/^([*#])/", "\n$1", $value ); // Restore newlines before lists
+						// Restore newlines before lists
+						$value = preg_replace( "/^([*#])/", "\n$1", $value );
 						$template .= "|$value";
 					}
 				}
 
 			// Block format
 			} else {
-
 				// Force capitalization
 				$title = ucfirst( $title );
 
@@ -132,13 +161,15 @@ class StandardWikitext {
 					if ( count( $parts ) === 2 ) {
 						$key = trim( $parts[0] );
 						$value = trim( $parts[1] );
-						$value = preg_replace( "/^([*#])/", "\n$1", $value ); // Restore newlines before lists
+						// Restore newlines before lists
+						$value = preg_replace( "/^([*#])/", "\n$1", $value );
 						if ( $value ) {
 							$template .= "\n| $key = $value";
 						}
 					} else {
 						$value = trim( $parts[0] );
-						$value = preg_replace( "/^([*#])/", "\n$1", $value ); // Restore newlines before lists
+						// Restore newlines before lists
+						$value = preg_replace( "/^([*#])/", "\n$1", $value );
 						$template .= "\n| $value";
 					}
 				}
@@ -160,7 +191,11 @@ class StandardWikitext {
 		return $wikitext;
 	}
 
-	public static function fixTables( $wikitext ) {
+	/**
+	 * @param string $wikitext
+	 * @return array|string|string[]
+	 */
+	public static function fixTables( string $wikitext ) {
 		$tables = self::getElements( "{|", "\n|}", $wikitext );
 		foreach ( $tables as $table ) {
 
@@ -172,10 +207,18 @@ class StandardWikitext {
 			$table = preg_replace( "/\|\|/", "\n|", $table );
 
 			// Add leading spaces
-			$table = preg_replace( "/^!([^ \n])/m", "! $1", $table ); // Headers
-			$table = preg_replace( "/^\|\+([^ \n])/m", "|+ $1", $table ); // Captions
-			$table = preg_replace( "/^\|-([^ \n])/m", "|- $1", $table ); // Newrows
-			$table = preg_replace( "/^\|([^ \n}+-])/m", "| $1", $table ); // Cells
+
+			// Headers
+			$table = preg_replace( "/^!([^ \n])/m", "! $1", $table );
+
+			// Captions
+			$table = preg_replace( "/^\|\+([^ \n])/m", "|+ $1", $table );
+
+			// Newrows
+			$table = preg_replace( "/^\|-([^ \n])/m", "|- $1", $table );
+
+			// Cells
+			$table = preg_replace( "/^\|([^ \n}+-])/m", "| $1", $table );
 
 			// Remove empty captions
 			$table = preg_replace( "/^\|\+ *\n/m", "", $table );
@@ -204,7 +247,11 @@ class StandardWikitext {
 		return $wikitext;
 	}
 
-	public static function fixLinks( $wikitext ) {
+	/**
+	 * @param string $wikitext
+	 * @return array|string|string[]
+	 */
+	public static function fixLinks( string $wikitext ) {
 		$links = self::getElements( '[[', ']]', $wikitext );
 		foreach ( $links as $link ) {
 
@@ -269,7 +316,6 @@ class StandardWikitext {
 
 			// Link with alternative text: [[Title|text]]
 			} elseif ( $params ) {
-
 				$text = $params[0];
 
 				// [[Foo| bar ]] → [[Foo|bar]]
@@ -301,7 +347,11 @@ class StandardWikitext {
 		return $wikitext;
 	}
 
-	public static function fixReferences( $wikitext ) {
+	/**
+	 * @param string $wikitext
+	 * @return array|string|string[]|null
+	 */
+	public static function fixReferences( string $wikitext ) {
 		// Fix spacing
 		$wikitext = preg_replace( "/<ref +name += +/", "<ref name=", $wikitext );
 		$wikitext = preg_replace( "/<ref([^>]+[^ ]+)\/>/", "<ref$1 />", $wikitext );
@@ -332,7 +382,11 @@ class StandardWikitext {
 		return $wikitext;
 	}
 
-	public static function fixLists( $wikitext ) {
+	/**
+	 * @param string $wikitext
+	 * @return array|string|string[]|null
+	 */
+	public static function fixLists( string $wikitext ) {
 		// Don't confuse a redirect with a numbered list
 		$wikitext = preg_replace( "/^#(.+ ?\[\[.+\]\])/", "@@@$1", $wikitext );
 
@@ -358,7 +412,11 @@ class StandardWikitext {
 		return $wikitext;
 	}
 
-	public static function fixSections( $wikitext ) {
+	/**
+	 * @param string $wikitext
+	 * @return array|string|string[]|null
+	 */
+	public static function fixSections( string $wikitext ) {
 		// Fix spacing
 		$wikitext = preg_replace( "/^(=+) *(.+?) *(=+) *$/m", "\n\n$1 $2 $3\n\n", $wikitext );
 		$wikitext = preg_replace( "/\n\n\n+/m", "\n\n", $wikitext );
@@ -377,8 +435,11 @@ class StandardWikitext {
 	 * Move categories to the bottom
 	 * and remove duplicate categories
 	 * @todo Only works in English
+	 *
+	 * @param string $wikitext
+	 * @return array|string|string[]
 	 */
-	public static function fixCategories( $wikitext ) {
+	public static function fixCategories( string $wikitext ) {
 		// Don't replace category links inside templates and parser functions
 		$templates = self::getElements( '{{', '}}', $wikitext );
 		foreach ( $templates as $i => $template ) {
@@ -405,7 +466,11 @@ class StandardWikitext {
 		return $wikitext;
 	}
 
-	public static function fixSpacing( $wikitext ) {
+	/**
+	 * @param string $wikitext
+	 * @return array|string|string[]|null
+	 */
+	public static function fixSpacing( string $wikitext ) {
 		// Give block templates some room
 		$templates = self::getElements( "\n{{", "}}\n", $wikitext );
 		foreach ( $templates as $template ) {
@@ -439,9 +504,12 @@ class StandardWikitext {
 		$wikitext = preg_replace( "/  +/", " ", $wikitext );
 
 		// Remove trailing spaces
-		$wikitext = preg_replace( "/^ $/m", "@@@", $wikitext ); // Exception for code blocks
+
+		// Exception for code blocks
+		$wikitext = preg_replace( "/^ $/m", "@@@", $wikitext );
 		$wikitext = preg_replace( "/ +$/m", "", $wikitext );
-		$wikitext = preg_replace( "/^@@@$/m", " ", $wikitext ); // Restore code block
+		// Restore code block
+		$wikitext = preg_replace( "/^@@@$/m", " ", $wikitext );
 
 		// Fix line breaks
 		$wikitext = preg_replace( "/ *<br ?\/?> */", "<br>", $wikitext );
@@ -460,6 +528,11 @@ class StandardWikitext {
 
 	/**
 	 * Helper method to get elements that may have similar elements nested inside
+	 *
+	 * @param string $prefix
+	 * @param string $suffix
+	 * @param string $wikitext
+	 * @return array
 	 */
 	public static function getElements( $prefix, $suffix, $wikitext ) {
 		$elements = [];
