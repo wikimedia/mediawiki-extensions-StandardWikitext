@@ -1,0 +1,9 @@
+{
+	"@metadata": {
+		"authors": [
+			"Xzonn"
+		]
+	},
+	"standardwikitext-desc": "保存页面时标准化并修复wikitext。",
+	"standardwikitext-summary": "标准化wikitext"
+}
