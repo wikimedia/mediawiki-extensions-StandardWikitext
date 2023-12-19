@@ -41,9 +41,14 @@ class StandardWikitext {
 			return;
 		}
 
-		// Check if fixing the wikitext changes anything
+		// Don't fix redirects
 		$content = $wikiPage->getContent();
 		$wikitext = ContentHandler::getContentText( $content );
+		if ( preg_match( "/^#(\S+ ?\[\[.+\]\])/", $wikitext ) ) {
+			return;
+		}
+
+		// Check if fixing the wikitext changes anything
 		$fixed = self::fixWikitext( $wikitext );
 		if ( $fixed === $wikitext ) {
 			return;
@@ -387,9 +392,6 @@ class StandardWikitext {
 	 * @return array|string|string[]|null
 	 */
 	public static function fixLists( string $wikitext ) {
-		// Don't confuse a redirect with a numbered list
-		$wikitext = preg_replace( "/^#(.+ ?\[\[.+\]\])/", "@@@$1", $wikitext );
-
 		// Remove extra spaces between list items
 		$wikitext = preg_replace( "/^([*#]) ?([*#])? ?([*#])?/m", "$1$2$3", $wikitext );
 
@@ -443,7 +445,7 @@ class StandardWikitext {
 		// Don't replace category links inside templates and parser functions
 		$templates = self::getElements( '{{', '}}', $wikitext );
 		foreach ( $templates as $i => $template ) {
-			$wikitext = str_replace( $template, "@@@$i@@@", $wikitext );
+			$wikitext = str_replace( $template, "@@$i@@", $wikitext );
 		}
 
 		$count = preg_match_all( "/\n*\[\[ ?[Cc]ategory ?: ?([^]]+) ?\]\]/", $wikitext, $matches );
@@ -461,8 +463,9 @@ class StandardWikitext {
 
 		// Restore templates
 		foreach ( $templates as $i => $template ) {
-			$wikitext = str_replace( "@@@$i@@@", $template, $wikitext );
+			$wikitext = str_replace( "@@$i@@", $template, $wikitext );
 		}
+
 		return $wikitext;
 	}
 
