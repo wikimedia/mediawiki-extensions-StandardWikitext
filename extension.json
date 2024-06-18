@@ -1,6 +1,6 @@
 {
 	"name": "StandardWikitext",
-	"version": "2.4",
+	"version": "2.5",
 	"author": "[https://www.mediawiki.org/wiki/User:Sophivorus Sophivorus]",
 	"url": "https://www.mediawiki.org/wiki/Extension:StandardWikitext",
 	"descriptionmsg": "standardwikitext-desc",
@@ -14,10 +14,14 @@
 			"i18n"
 		]
 	},
+	"ExtensionMessagesFiles": {
+		"StandardWikitextMagic": "StandardWikitext.magic.php"
+	},
 	"AutoloadClasses": {
 		"StandardWikitext": "StandardWikitext.php"
 	},
 	"Hooks": {
+		"GetDoubleUnderscoreIDs": "StandardWikitext::onGetDoubleUnderscoreIDs",
 		"PageSaveComplete": "StandardWikitext::onPageSaveComplete"
 	},
 	"config": {

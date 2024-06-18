@@ -1,6 +1,14 @@
 <?php
 
 class StandardWikitext {
+
+	/**
+	 * @param array &$ids
+	 */
+	public static function onGetDoubleUnderscoreIDs( &$ids ) {
+		$ids[] = 'NOSTANDARDWIKITEXT';
+	}
+
 	/**
 	 * @param WikiPage $wikiPage
 	 * @param \MediaWiki\User\UserIdentity $user
@@ -19,6 +27,10 @@ class StandardWikitext {
 		MediaWiki\Storage\EditResult $editResult
 	) {
 		global $wgStandardWikitextAccount, $wgStandardWikitextNamespaces;
+
+		if ( $wikiPage->getParserOutput()->getPageProperty( 'NOSTANDARDWIKITEXT' ) !== null ) {
+			return;
+		}
 
 		// Prevent infinite loops
 		if ( $user->getName() === $wgStandardWikitextAccount ) {
