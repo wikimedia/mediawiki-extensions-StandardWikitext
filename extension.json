@@ -1,6 +1,7 @@
 {
+	"manifest_version": 2,
 	"name": "StandardWikitext",
-	"version": "2.5",
+	"version": "3.0",
 	"author": "[https://www.mediawiki.org/wiki/User:Sophivorus Sophivorus]",
 	"url": "https://www.mediawiki.org/wiki/Extension:StandardWikitext",
 	"descriptionmsg": "standardwikitext-desc",
@@ -32,6 +33,5 @@
 			"value": [ 0 ],
 			"merge_strategy": "provide_default"
 		}
-	},
-	"manifest_version": 2
+	}
 }

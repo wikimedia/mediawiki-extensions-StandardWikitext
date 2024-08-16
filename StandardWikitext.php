@@ -1,5 +1,7 @@
 <?php
 
+use MediaWiki\MediaWikiServices;
+
 class StandardWikitext {
 
 	/**
@@ -26,14 +28,15 @@ class StandardWikitext {
 		MediaWiki\Revision\RevisionRecord $revisionRecord,
 		MediaWiki\Storage\EditResult $editResult
 	) {
-		global $wgStandardWikitextAccount, $wgStandardWikitextNamespaces;
-
-		if ( $wikiPage->getParserOutput()->getPageProperty( 'NOSTANDARDWIKITEXT' ) !== null ) {
+		// Prevent infinite loops
+		$config = MediaWikiServices::getInstance()->getMainConfig();
+		$account = $config->get( 'StandardWikitextAccount' );
+		if ( $user->getName() === $account ) {
 			return;
 		}
 
-		// Prevent infinite loops
-		if ( $user->getName() === $wgStandardWikitextAccount ) {
+		// Don't fix pages that are explicitly marked so
+		if ( $wikiPage->getParserOutput()->getPageProperty( 'NOSTANDARDWIKITEXT' ) !== null ) {
 			return;
 		}
 
@@ -42,25 +45,28 @@ class StandardWikitext {
 			return;
 		}
 
-		// Check if the wikitext should be fixed
+		// Don't fix redirects
 		$title = $wikiPage->getTitle();
+		if ( $title->isRedirect() ) {
+			return;
+		}
+
+		// Only fix wikitext pages
 		$contentModel = $title->getContentModel();
 		if ( $contentModel !== CONTENT_MODEL_WIKITEXT ) {
 			return;
 		}
+
+		// Only fix in configured namespaces
 		$namespace = $title->getNamespace();
-		if ( !in_array( $namespace, $wgStandardWikitextNamespaces ) ) {
+		$namespaces = $config->get( 'StandardWikitextNamespaces' );
+		if ( !in_array( $namespace, $namespaces ) ) {
 			return;
 		}
 
-		// Don't fix redirects
+		// Fix the wikitext and check if anything changed
 		$content = $wikiPage->getContent();
-		$wikitext = ContentHandler::getContentText( $content );
-		if ( preg_match( "/^#(\S+ ?\[\[.+\]\])/", $wikitext ) ) {
-			return;
-		}
-
-		// Check if fixing the wikitext changes anything
+		$wikitext = $content->getText();
 		$fixed = self::fixWikitext( $wikitext );
 		if ( $fixed === $wikitext ) {
 			return;
@@ -76,11 +82,12 @@ class StandardWikitext {
 	 * @return void
 	 */
 	public static function saveWikitext( string $wikitext, WikiPage $wikiPage ) {
-		global $wgStandardWikitextAccount;
+		$config = MediaWikiServices::getInstance()->getMainConfig();
+		$account = $config->get( 'StandardWikitextAccount' );
+		$user = User::newSystemUser( $account );
+		$updater = $wikiPage->newPageUpdater( $user );
 		$title = $wikiPage->getTitle();
 		$content = ContentHandler::makeContent( $wikitext, $title );
-		$user = User::newSystemUser( $wgStandardWikitextAccount );
-		$updater = $wikiPage->newPageUpdater( $user );
 		$updater->setContent( 'main', $content );
 		$summary = wfMessage( 'standardwikitext-summary' )->inContentLanguage()->text();
 		$comment = CommentStoreComment::newUnsavedComment( $summary );
