@@ -2,7 +2,7 @@
 
 /**
  * @group Sections
- * @covers StandardWikitext::fixSections
+ * @covers \StandardWikitext::fixSections
  */
 class SectionsTest extends MediaWikiUnitTestCase {
 

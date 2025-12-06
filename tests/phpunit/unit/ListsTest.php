@@ -2,7 +2,7 @@
 
 /**
  * @group Lists
- * @covers StandardWikitext::fixLists
+ * @covers \StandardWikitext::fixLists
  */
 class ListsTest extends MediaWikiUnitTestCase {
 

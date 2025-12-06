@@ -2,7 +2,7 @@
 
 /**
  * @group Templates
- * @covers StandardWikitext::fixTemplates
+ * @covers \StandardWikitext::fixTemplates
  */
 class TemplatesTest extends MediaWikiUnitTestCase {
 

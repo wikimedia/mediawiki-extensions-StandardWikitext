@@ -2,7 +2,7 @@
 
 /**
  * @group Links
- * @covers StandardWikitext::fixLinks
+ * @covers \StandardWikitext::fixLinks
  */
 class LinksTest extends MediaWikiIntegrationTestCase {
 

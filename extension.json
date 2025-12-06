@@ -1,5 +1,4 @@
 {
-	"manifest_version": 2,
 	"name": "StandardWikitext",
 	"version": "3.0",
 	"author": "[https://www.mediawiki.org/wiki/User:Sophivorus Sophivorus]",
@@ -33,5 +32,6 @@
 			"value": [ 0 ],
 			"merge_strategy": "provide_default"
 		}
-	}
+	},
+	"manifest_version": 2
 }

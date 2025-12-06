@@ -2,7 +2,7 @@
 
 /**
  * @group Tables
- * @covers StandardWikitext::fixTables
+ * @covers \StandardWikitext::fixTables
  */
 class TablesTest extends MediaWikiUnitTestCase {
 
