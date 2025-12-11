@@ -15,24 +15,23 @@ class fixWikitext extends Maintenance {
 		global $wgStandardWikitextNamespaces;
 
 		// Get the pages to standardise
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnection( DB_REPLICA );
-		$results = $dbr->select( 'page', 'page_id', [
+		$services = MediaWikiServices::getInstance();
+		$dbr = $services->getDBLoadBalancer()->getConnection( DB_REPLICA );
+		$pageIds = $dbr->selectFieldValues( 'page', 'page_id', [
 			'page_content_model' => CONTENT_MODEL_WIKITEXT,
 			'page_namespace' => $wgStandardWikitextNamespaces
 		] );
-		foreach ( $results as $result ) {
+		$wikiPageFactory = $services->getWikiPageFactory();
 
+		foreach ( $pageIds as $pageId ) {
 			// Get the working title
-			$id = $result->page_id;
-			$title = Title::newFromID( $id );
-			$text = $title->getFullText();
-			$this->output( $text );
+			$title = Title::newFromID( $pageId );
+			$this->output( $title->getFullText() );
 
 			// Get the wikitext
-			$wikiPage = WikiPage::factory( $title );
+			$wikiPage = $wikiPageFactory->newFromTitle( $title );
 			$content = $wikiPage->getContent();
-			$wikitext = ContentHandler::getContentText( $content );
+			$wikitext = $content instanceof TextContent ? $content->getText() : '';
 
 			// Check if fixing the wikitext changes anything
 			$fixed = StandardWikitext::fixWikitext( $wikitext );
