@@ -1,8 +1,10 @@
 {
 	"@metadata": {
 		"authors": [
+			"Tensama0415",
 			"Ykhwong"
 		]
 	},
+	"standardwikitext-desc": "문서가 저장될 때 위키텍스트를 표준화하고 수정합니다.",
 	"standardwikitext-summary": "위키텍스트 표준화"
 }
